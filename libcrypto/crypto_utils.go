@@ -25,3 +25,13 @@ func HammingDist(b1 []byte, b2[]byte) (dist int) {
 	}
 	return dist
 }
+
+func Pkcs7Pad(bytes []byte, block_size int) []byte{
+
+	amount := block_size - (len(bytes) % block_size)
+	padding := make([]byte, amount)
+	for i := range padding {
+		padding[i] = byte(amount)
+	}
+	return append(bytes, padding...)
+}
