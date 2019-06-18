@@ -16,6 +16,26 @@ type data struct {
 	Secret string
 }
 
+
+func random_pad(cipher_text []byte) (padded_cipher_text []byte) {
+
+	amount := 5 + rand.Intn(5)
+	pad := make([]byte, amount)
+	rand.Read(pad)
+
+	padded_cipher_text = append(cipher_text, pad...)
+
+	amount = 5 + rand.Intn(5)
+	pad = make([]byte, amount)
+	rand.Read(pad)
+
+	return crypt.Pkcs7Pad(append(pad, padded_cipher_text...), 16)
+
+
+
+
+}
+
 func random_encrypt(clear_text []byte) []byte {
 
 	rand_key := make([]byte, 16)
@@ -50,7 +70,7 @@ func http_handler(w http.ResponseWriter, r *http.Request) {
 		}
 		fmt.Println(clear_text)
 
-		cipher_text, err := crypt.Bytes2B64(random_encrypt(crypt.Pkcs7Pad([]byte(clear_text.Secret), 16)))
+		cipher_text, err := crypt.Bytes2Hex(random_encrypt(random_pad([]byte(clear_text.Secret))))
 		if err != nil {
 			fmt.Println(err)
 		}
