@@ -2,6 +2,7 @@ package libcrypto
 
 import (
 	"fmt"
+	"strings"
 )
 
 func Hex2Bytes(hex string) (bytes []byte, err error) {
@@ -33,6 +34,9 @@ func Hex2Bytes(hex string) (bytes []byte, err error) {
 }
 
 func B642Bytes(b64 string) (bytes []byte, err error) {
+
+
+	toRemove := strings.Count(b64, "=")
 
 	if len(b64) % 4 != 0 {
 		return nil, fmt.Errorf("B642Bytes recieved string with an insufficient padding")
@@ -71,7 +75,7 @@ func B642Bytes(b64 string) (bytes []byte, err error) {
 
 	}
 
-	return bytes, nil
+	return bytes[:len(bytes) - toRemove], nil
 }
 
 func Bytes2Hex(bytes []byte) (hex string, err error) {
