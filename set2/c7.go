@@ -24,4 +24,10 @@ func main() {
 	} else {
 		fmt.Println(text)
 	}
+	text, err = crypt.Pkcs7Unpad([]byte("\x16\x16\x16\x16\x16\x16\x16\x16\x16\x16\x16\x16\x16\x16\x16\x16"), 16)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println(text)
+	}
 }

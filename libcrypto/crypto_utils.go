@@ -39,7 +39,7 @@ func Pkcs7Pad(bytes []byte, block_size int) []byte{
 
 func Pkcs7Unpad(bytes []byte, block_size int) (unpadded []byte, err error) {
 	lastByte := bytes[len(bytes) - 1]
-	if int(lastByte) < block_size && lastByte > 0 {
+	if int(lastByte) <= block_size && int(lastByte) > 0 {
 		padding := bytes[len(bytes) - int(lastByte):]
 		for _, v := range padding {
 			if v != lastByte {
@@ -48,5 +48,5 @@ func Pkcs7Unpad(bytes []byte, block_size int) (unpadded []byte, err error) {
 		}
 		return bytes[:len(bytes) - int(lastByte)], nil
 	}
-	return bytes, nil
+	return unpadded, fmt.Errorf("Recieved byte array without padding")
 }
