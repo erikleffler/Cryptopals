@@ -2,6 +2,7 @@ package libcrypto
 
 import (
 	"math/bits"
+	"fmt"
 )
 
 // Assumes b1 is longer than b2
@@ -34,4 +35,18 @@ func Pkcs7Pad(bytes []byte, block_size int) []byte{
 		padding[i] = byte(amount)
 	}
 	return append(bytes, padding...)
+}
+
+func Pkcs7Unpad(bytes []byte, block_size int) (unpadded []byte, err error) {
+	lastByte := bytes[len(bytes) - 1]
+	if int(lastByte) < block_size && lastByte > 0 {
+		padding := bytes[len(bytes) - int(lastByte):]
+		for _, v := range padding {
+			if v != lastByte {
+				return unpadded, fmt.Errorf("Invalid padding")
+			}
+		}
+		return bytes[:len(bytes) - int(lastByte)], nil
+	}
+	return bytes, nil
 }
