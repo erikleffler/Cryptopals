@@ -4,58 +4,91 @@ import (
 	"crypto/cipher"
 )
 
-func EcbDecrypt(cipher_text []byte, cipher cipher.Block) (clear_text []byte) {
+func EcbDecrypt(cipherText []byte, cipher cipher.Block) (clearText []byte) {
 
-	clear_text = make([]byte, len(cipher_text))
+	clearText = make([]byte, len(cipherText))
 
-	for i := 0; i < len(cipher_text) / 16; i++ {
+	for i := 0; i < len(cipherText) / 16; i++ {
 
-		cipher.Decrypt(clear_text[i*16:(i+1)*16], cipher_text[i*16:(i+1)*16])
+		cipher.Decrypt(clearText[i*16:(i+1)*16], cipherText[i*16:(i+1)*16])
 	}
-	return clear_text
+	return clearText
 }
 
-func EcbEncrypt(clear_text []byte, cipher cipher.Block) (cipher_text []byte) {
+func EcbEncrypt(clearText []byte, cipher cipher.Block) (cipherText []byte) {
 
-	cipher_text = make([]byte, len(clear_text))
+	cipherText = make([]byte, len(clearText))
 
-	for i := 0; i < len(clear_text) / 16; i++ {
+	for i := 0; i < len(clearText) / 16; i++ {
 
-		cipher.Encrypt(cipher_text[i*16:(i+1)*16], clear_text[i*16:(i+1)*16])
+		cipher.Encrypt(cipherText[i*16:(i+1)*16], clearText[i*16:(i+1)*16])
 	}
-	return cipher_text
+	return cipherText
 }
 
-func CbcDecrypt(cipher_text []byte, iv []byte, cipher cipher.Block) (clear_text []byte) {
+func CbcDecrypt(cipherText []byte, iv []byte, cipher cipher.Block) (clearText []byte) {
 
 
-	pre_xored_block := make([]byte, 16)
+	preXoredBlock := make([]byte, 16)
 
-	cipher.Decrypt(pre_xored_block, cipher_text[0:16])
-	clear_text = append(clear_text, Xor(pre_xored_block, iv)...)
+	cipher.Decrypt(preXoredBlock, cipherText[0:16])
+	clearText = append(clearText, Xor(preXoredBlock, iv)...)
 
-	for i := 1; i < len(cipher_text) / 16; i++ {
+	for i := 1; i < len(cipherText) / 16; i++ {
 
-		cipher.Decrypt(pre_xored_block, cipher_text[i*16:(i+1)*16])
-		clear_text = append(clear_text, Xor(pre_xored_block, cipher_text[(i-1)*16:i*16])...)
+		cipher.Decrypt(preXoredBlock, cipherText[i*16:(i+1)*16])
+		clearText = append(clearText, Xor(preXoredBlock, cipherText[(i-1)*16:i*16])...)
 	}
 
-	return clear_text
+	return clearText
 }
 
-func CbcEncrypt(clear_text []byte, iv []byte, cipher cipher.Block) (cipher_text []byte) {
+func CbcEncrypt(clearText []byte, iv []byte, cipher cipher.Block) (cipherText []byte) {
 
-	cipher_text = make([]byte, len(clear_text))
+	cipherText = make([]byte, len(clearText))
 
-	xored_block := Xor(clear_text[0:16], iv)
+	xoredBlock := Xor(clearText[0:16], iv)
 
 	i := 0
-	for ; i < (len(clear_text) - 1) / 16; i++ {
+	for ; i < (len(clearText) - 1) / 16; i++ {
 
-		cipher.Encrypt(cipher_text[i*16:(i+1)*16], xored_block)
-		xored_block = Xor(clear_text[(i+1)*16:(i+2)*16], cipher_text[i*16:(i+1)*16])
+		cipher.Encrypt(cipherText[i*16:(i+1)*16], xoredBlock)
+		xoredBlock = Xor(clearText[(i+1)*16:(i+2)*16], cipherText[i*16:(i+1)*16])
 	}
 
-	cipher.Encrypt(cipher_text[i*16:(i+1)*16], xored_block)
-	return cipher_text
+	cipher.Encrypt(cipherText[i*16:(i+1)*16], xoredBlock)
+	return cipherText
+}
+
+func CtrDecrypt(cipherText []byte, nonce []byte, cipher cipher.Block) (clearText []byte) {
+
+	xorPad := make([]byte, 16)
+	encBlock := append(nonce, make([]byte, 16)...)
+	for ctr := 0; ctr < len(cipherText) / 16; ctr++ {
+		encBlock[8] = byte(ctr)
+		cipher.Encrypt(xorPad, encBlock)
+		clearText = append(clearText, Xor(cipherText[ctr*16:(ctr+1)*16], xorPad)...)
+	}
+	ctr := len(cipherText) / 16
+	blockLen := len(cipherText) % 16
+	encBlock[8] = byte(ctr)
+	cipher.Encrypt(xorPad, encBlock)
+	clearText = append(clearText, Xor(cipherText[ctr*16:ctr*16+blockLen], xorPad)...)
+	return clearText
+}
+func CtrEncrypt(clearText []byte, nonce []byte, cipher cipher.Block) (cipherText []byte) {
+
+	xorPad := make([]byte, 16)
+	encBlock := append(nonce, make([]byte, 16)...)
+	for ctr := 0; ctr <= len(clearText) / 16; ctr++ {
+		encBlock[8] = byte(ctr)
+		cipher.Encrypt(xorPad, encBlock)
+		cipherText = append(cipherText, Xor(clearText[ctr*16:(ctr+1)*16], xorPad)...)
+	}
+	ctr := len(clearText) / 16
+	blockLen := len(clearText) % 16
+	encBlock[8] = byte(ctr)
+	cipher.Encrypt(xorPad, encBlock)
+	cipherText = append(cipherText, Xor(clearText[ctr*16:ctr*16+blockLen], xorPad)...)
+	return cipherText
 }
