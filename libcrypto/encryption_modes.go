@@ -74,7 +74,7 @@ func CtrDecrypt(cipherText []byte, nonce []byte, cipher cipher.Block) (clearText
 	encBlock[8] = byte(ctr)
 	cipher.Encrypt(xorPad, encBlock)
 	clearText = append(clearText, Xor(cipherText[ctr*16:ctr*16+blockLen], xorPad)...)
-	return clearText
+	return clearText[:len(cipherText)]
 }
 func CtrEncrypt(clearText []byte, nonce []byte, cipher cipher.Block) (cipherText []byte) {
 
@@ -90,5 +90,5 @@ func CtrEncrypt(clearText []byte, nonce []byte, cipher cipher.Block) (cipherText
 	encBlock[8] = byte(ctr)
 	cipher.Encrypt(xorPad, encBlock)
 	cipherText = append(cipherText, Xor(clearText[ctr*16:ctr*16+blockLen], xorPad)...)
-	return cipherText
+	return cipherText[:len(clearText)]
 }
