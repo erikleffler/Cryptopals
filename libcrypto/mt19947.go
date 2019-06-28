@@ -22,31 +22,31 @@ var uppMask = uint32(1 << uint32(31))
 
 
 type MT struct {
-	state	[]uint32
-	seeded	bool
-	index	uint32
+	State	[]uint32
+	Seeded	bool
+	Index	uint32
 }
 
 func (mt *MT) Rand() (uint32, error) {
 
-	if !mt.seeded {
-		return 0, fmt.Errorf("Calling rand on unseeded MT")
+	if !mt.Seeded {
+		return 0, fmt.Errorf("Calling rand on unSeeded MT")
 	}
 
-	if mt.index == n {
+	if mt.Index == n {
 		err := mt.twist()
 		if err != nil {
 			return 0, err
 		}
 	}
 
-	y := mt.state[mt.index]
+	y := mt.State[mt.Index]
 	y ^= (y >> u)
 	y ^= ((y << s) & b)
 	y ^= ((y << t) & c)
 	y ^= y >> l
 
-	mt.index += 1
+	mt.Index += 1
 
 	return y, nil
 
@@ -54,34 +54,34 @@ func (mt *MT) Rand() (uint32, error) {
 }
 
 func (mt *MT) twist() error {
-	if mt.index != n {
+	if mt.Index != n {
 		return fmt.Errorf("Twisting before having retrieved all tempered values")
 	}
 	var x uint32
 	var xA uint32
 	for i := uint32(0); i < n; i++ {
-		x = (mt.state[i] & uppMask) + (mt.state[(i + 1) % n] & lowMask)
+		x = (mt.State[i] & uppMask) + (mt.State[(i + 1) % n] & lowMask)
 		xA = x >> 1
 		if x % 2 != 0 {
 			xA ^= a
 		}
-		mt.state[i] = mt.state[(i + m) % n] ^ xA
+		mt.State[i] = mt.State[(i + m) % n] ^ xA
 	}
-	mt.index = 0
+	mt.Index = 0
 	return nil
 }
 
 func (mt *MT) seedMT(seed uint32) error {
-	if mt.seeded {
-		return fmt.Errorf("MT Already seeded")
+	if mt.Seeded {
+		return fmt.Errorf("MT Already Seeded")
 	}
-	mt.state = make([]uint32, n)
-	mt.state[0] = seed
+	mt.State = make([]uint32, n)
+	mt.State[0] = seed
 	for i := uint32(1); i < n; i++ {
-		mt.state[i] = uint32(f * (mt.state[i-1] ^ (mt.state[i-1] >> (w-2))) + i)
+		mt.State[i] = uint32(f * (mt.State[i-1] ^ (mt.State[i-1] >> (w-2))) + i)
 	}
-	mt.index = n
-	mt.seeded = true
+	mt.Index = n
+	mt.Seeded = true
 	return nil
 }
 
