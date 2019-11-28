@@ -64,31 +64,25 @@ func CtrDecrypt(cipherText []byte, nonce []byte, cipher cipher.Block) (clearText
 
 	xorPad := make([]byte, 16)
 	encBlock := append(nonce, make([]byte, 16)...)
-	for ctr := 0; ctr < len(cipherText) / 16; ctr++ {
+
+	// Length -1 here to avoid if else over len % 16
+	for ctr := 0; ctr < (len(cipherText) - 1) / 16; ctr++ {
 		encBlock[8] = byte(ctr)
 		cipher.Encrypt(xorPad, encBlock)
 		clearText = append(clearText, Xor(cipherText[ctr*16:(ctr+1)*16], xorPad)...)
 	}
-	ctr := len(cipherText) / 16
-	blockLen := len(cipherText) % 16
-	encBlock[8] = byte(ctr)
-	cipher.Encrypt(xorPad, encBlock)
-	clearText = append(clearText, Xor(cipherText[ctr*16:ctr*16+blockLen], xorPad)...)
 	return clearText[:len(cipherText)]
 }
 func CtrEncrypt(clearText []byte, nonce []byte, cipher cipher.Block) (cipherText []byte) {
 
 	xorPad := make([]byte, 16)
 	encBlock := append(nonce, make([]byte, 16)...)
-	for ctr := 0; ctr <= len(clearText) / 16; ctr++ {
+
+	// Length -1 here to avoid if else over len % 16
+	for ctr := 0; ctr <= (len(clearText) - 1) / 16; ctr++ {
 		encBlock[8] = byte(ctr)
 		cipher.Encrypt(xorPad, encBlock)
 		cipherText = append(cipherText, Xor(clearText[ctr*16:(ctr+1)*16], xorPad)...)
 	}
-	ctr := len(clearText) / 16
-	blockLen := len(clearText) % 16
-	encBlock[8] = byte(ctr)
-	cipher.Encrypt(xorPad, encBlock)
-	cipherText = append(cipherText, Xor(clearText[ctr*16:ctr*16+blockLen], xorPad)...)
 	return cipherText[:len(clearText)]
 }
