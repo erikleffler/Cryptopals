@@ -67,7 +67,7 @@ func CtrDecrypt(cipherText []byte, nonce []byte, cipher cipher.Block) (clearText
 	encBlock := append(nonce, make([]byte, 8)...)
 
 	var ctr uint64
-	for ctr = 0; int(ctr) < (len(cipherText) - 1) / 16; ctr++ {
+	for ctr = 0; int(ctr) < len(cipherText) / 16; ctr++ {
 		binary.LittleEndian.PutUint64(encBlock[8:], ctr)
 		cipher.Encrypt(xorPad, encBlock)
 		clearText = append(clearText, Xor(cipherText[ctr*16:(ctr+1)*16], xorPad)...)
