@@ -107,7 +107,7 @@ func main() {
 	}
 
 	key = make([]byte, 16)
-	nonce := make([]byte, 16)
+	nonce := make([]byte, 8)
 
 	rand.Seed(time.Now().UTC().UnixNano())
 	rand.Read(key)
